@@ -35,8 +35,8 @@ addons:
 install:
  - conda install -q numpy pillow pandas jupyter nbconvert # matplotlib
 
- # install the most recent rdkit and boost packages from the RDKit anaconda channel.
- - conda install -q -c rdkit boost=1.55.0
+ # install the most recent rdkit package from the RDKit anaconda channel.
+ - conda install -q -c rdkit rdkit
 
 before_script:
  # RDKit
