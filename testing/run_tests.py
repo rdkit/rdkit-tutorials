@@ -34,29 +34,47 @@ import re
 ptr_expr = re.compile(r'^<(.*) at 0x.*>')
 def process_cell(cell):
     txt = cell['source']
+    if '# doctest: IGNORE' in txt:
+        return None,None
     if not txt:
         return None,None
-    if(re.search('print(.*)',txt)):
-        warnings.warn("print functions found in a cell. Attempted to comment them out.")
-    txt = re.sub(r'print\((.*)\)',r'# print(\1)',txt)
+    # if(re.search('print(.*)',txt)):
+    #     warnings.warn("print functions found in a cell. Attempted to comment them out.")
+    #     print(cell)
+    # txt = re.sub(r'print\((.*)\)',r'# print(\1)',txt)
+    keep_txt = [x for x in txt.split('\n') ]
+    for i,entry in enumerate(keep_txt[:-1]):
+        if(re.search('print(.*)',entry)):
+            warnings.warn("print function found on a non-terminal line. Attempting to comment it out.")
+            keep_txt[i] = re.sub(r'print\((.*)\)',r'# print(\1)',entry)
+    #cell_code = ['>>> '+x for x in keep_txt]
+    #cell_code = [x for x in txt.split('\n')]
+    cell_code = ">>> "+";".join(keep_txt)
 
-    cell_code = ['>>> '+x for x in txt.split('\n')]
-    if len(cell['outputs'])>1:
-        warnings.warn("Multiple outputs found for a cell. Only the execute_result will be used")
-    outputs = [x for x in cell['outputs'] if x['output_type']=='execute_result']
-    assert len(outputs)<=1
+    outputs = [x for x in cell['outputs'] if x['output_type'] in ('execute_result','stream')]
+    if len(outputs)>1:
+        warnings.warn("more than one output found. Ignoring all but the last")
+        outputs = outputs[-1:]
+
     cell_output=[]
     for output in outputs:
-        d = output['data']
-        if 'text/plain' not in d:
-            continue
-        txt = d['text/plain']
+        if output['output_type']=='execute_result':
+            d = output['data']
+            if 'text/plain' not in d:
+                continue
+            txt = d['text/plain']
+        elif output['output_type']=='stream':
+            if output['name'] == 'stdout':
+                txt = output['text']
+                txt = txt.replace('\n\n','\n<BLANKLINE>\n')
+        else:
+            raise NotImplementedError(output['output_type'])
         if ptr_expr.match(txt):
             txt = ptr_expr.sub(r'<\1... at 0x...>',txt)
-            cell_code[-1] += ' # doctest: +ELLIPSIS'
+            cell_code += ' # doctest: +ELLIPSIS'
         cell_output.append(txt)
 
-    return cell_code,cell_output
+    return [cell_code],cell_output
 
 def process_notebook(nb):
     """
@@ -88,6 +106,7 @@ def rundoctests(text, name='<text>', globs=None, verbose=None,
         globs.update(extraglobs)
     if '__name__' not in globs:
         globs['__name__'] = '__main__'
+    #print(text)
     # Parse the text to find doc tests.
     parser = doctest.DocTestParser()
     test = parser.get_doctest(text, globs, name, name, 0)
