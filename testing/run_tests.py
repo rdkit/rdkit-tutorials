@@ -1,9 +1,30 @@
+# Copyright (C) 2016 Greg Landrum
+# All rights reserved
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+# 1. Redistributions of source code must retain the above copyright notice,
+#   this list of conditions and the following disclaimer.
+# 2. Redistributions in binary form must reproduce the above copyright notice,
+#   this list of conditions and the following disclaimer in the documentation
+#   and/or other materials provided with the distribution.
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+# TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+# PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS
+# BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+# CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+# POSSIBILITY OF SUCH DAMAGE.
+#
 import os,warnings
 import nbformat
 
 def _notebook_read(path):
-    """Read a notebook via nbconvert
-       :returns parsed nb object
+    """Read a notebook using nbformat
     """
     inf = open(path)
     nb = nbformat.read(inf,nbformat.current_nbformat)
@@ -58,7 +79,7 @@ def rundoctests(text, name='<text>', globs=None, verbose=None,
                report=True, optionflags=0, extraglobs=None,
                raise_on_error=False,
                quiet=False,):
-    # From: http://www.mail-archive.com/python-list@python.org/msg404719.html
+    # adapted from: http://www.mail-archive.com/python-list@python.org/msg404719.html
     # Assemble the globals.
     if globs is None:
         globs = globals()
@@ -67,7 +88,7 @@ def rundoctests(text, name='<text>', globs=None, verbose=None,
         globs.update(extraglobs)
     if '__name__' not in globs:
         globs['__name__'] = '__main__'
-    # Parse the text looking for doc tests.
+    # Parse the text to find doc tests.
     parser = doctest.DocTestParser()
     test = parser.get_doctest(text, globs, name, name, 0)
     # Run the tests.
@@ -97,8 +118,19 @@ def run_tests(txt):
 
 if __name__ =='__main__':
     import sys
+    nTried=0
+    nFailed=0
     for fn in sys.argv[1:]:
+        print("--------------------------------------------------------------")
+        print("  TESTING:  %s"%fn)
         nb = _notebook_read(fn)
         txt = process_notebook(nb)
-        print(txt)
-        run_tests(txt)
+        tpl = run_tests(txt)
+        nFailed += tpl.failed
+        nTried += tpl.attempted
+    if nFailed:
+        print("FAILED: %d tests of %d run"%(nFailed,nTried))
+        sys.exit(1)
+    else:
+        print("All %d tests passed"%nTried)
+        sys.exit(0)
