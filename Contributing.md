@@ -17,6 +17,8 @@ Many of the guidelines below are due to the limitations in that testing code.
 
 ### Guidelines
 
+- Please follow the naming scheme of the other tutorials: `XXX_NAME.ipynb` where `XXX` is the zero-padded (to ensure proper sorting) number of the tutorial. The numbering should be sequential (except for the special-case of `999_Test1.ipynb`, which is there as part of the testing code).
+
 - Include a markdown cell somewhere in the document, preferably at the beginning, with a list of tags that are appropriate for the tutorial. This should look like: `@TAGS: #basics #2D`. If you have a question about which tags are currently in use, just [search the repo](https://github.com/rdkit/rdkit-tutorials/search?q=%22%40TAGS%22&type=Code) for the text `@TAGS` and see what shows up. If a tag is missing that you think should be there, just use it. But please do try not to introduce redundant tags.
 
 - If possible, avoid using the `print()` function. If you would like to show the output of a function/operation, just make that the last operation in a code cell; it will show up as the output and can then be properly tested. If you must include a `print()` function (because, for example, you'd like to show a multi-line string), make it the *last* line of the cell. The output of this `print()` will then be included in the tests. Other occurences of `print()` in a cell will be ignored when the tests are run.
