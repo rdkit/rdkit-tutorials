@@ -33,7 +33,7 @@ addons:
     - libjpeg-dev
 
 install:
- - conda install -q numpy pillow pandas # matplotlib
+ - conda install -q numpy pillow pandas jupyter nbconvert # matplotlib
 
  # install the most recent rdkit and boost packages from the RDKit anaconda channel.
  - conda install -q -c rdkit boost=1.55.0
@@ -47,4 +47,3 @@ script:
  - export BASEDIR=`pwd`
  - cd notebooks
  - python ../testing/run_tests.py *.ipynb
- 
