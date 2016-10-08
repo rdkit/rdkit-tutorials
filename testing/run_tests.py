@@ -38,6 +38,14 @@ def process_cell(cell):
         return None,None
     if not txt:
         return None,None
+    if txt[0]=='!' or txt.find('\n!')!=-1:
+        warnings.warn("ipython shell command found in cell. Skipping the cell.")
+        return None,None
+    if txt[0]=='%' or txt.find('\n%')!=-1:
+        warnings.warn("ipython magic command found in cell. Skipping the cell.")
+        return None,None
+
+
     # if(re.search('print(.*)',txt)):
     #     warnings.warn("print functions found in a cell. Attempted to comment them out.")
     #     print(cell)
@@ -94,11 +102,13 @@ def process_notebook(nb):
 import doctest
 
 def rundoctests(text, name='<text>', globs=None, verbose=None,
-               report=True, optionflags=0, extraglobs=None,
+               report=True, optionflags=None, extraglobs=None,
                raise_on_error=False,
                quiet=False,):
     # adapted from: http://www.mail-archive.com/python-list@python.org/msg404719.html
     # Assemble the globals.
+    if optionflags is None:
+        optionflags = doctest.NORMALIZE_WHITESPACE
     if globs is None:
         globs = globals()
     globs = globs.copy()
