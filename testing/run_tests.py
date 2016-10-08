@@ -30,6 +30,21 @@ def _notebook_read(path):
     nb = nbformat.read(inf,nbformat.current_nbformat)
     return nb
 
+def _handle_multilinetext(txt,quotes):
+    keep_txt = []
+    stxt = txt.split(quotes)
+    for i in range(0,len(stxt),2):
+        piece = stxt[i]
+        if piece[0] == '\n':
+            piece = piece[1:]
+        if piece == '':
+            continue
+        keep_txt.extend(piece.split("\n"))
+        if i+1<len(stxt): # still a text block here
+            keep_txt[-1] = keep_txt[-1]+quotes+"\n... ".join(stxt[i+1].split("\n"))+quotes
+    return keep_txt
+
+
 import re
 ptr_expr = re.compile(r'^<(.*) at 0x.*>')
 def process_cell(cell):
@@ -45,12 +60,23 @@ def process_cell(cell):
         warnings.warn("ipython magic command found in cell. Skipping the cell.")
         return None,None
 
-
     # if(re.search('print(.*)',txt)):
     #     warnings.warn("print functions found in a cell. Attempted to comment them out.")
     #     print(cell)
     # txt = re.sub(r'print\((.*)\)',r'# print(\1)',txt)
-    keep_txt = [x for x in txt.split('\n') ]
+    # NOTE: this is extremely crude
+    txt = txt.replace("\\\n","\n")
+    if txt.find('"""')>=0 :
+        if txt.find("'''") != -1:
+            raise ValueError("cannot deal with mixed multi-line notations in a single cell")
+        keep_txt = _handle_multilinetext(txt,'"""')
+    elif txt.find("'''")>=0 :
+        if txt.find('"""') != -1:
+            raise ValueError("cannot deal with mixed multi-line notations in a single cell")
+        keep_txt = _handle_multilinetext(txt,"'''")
+
+    else:
+        keep_txt = [x for x in txt.split('\n') ]
     for i,entry in enumerate(keep_txt[:-1]):
         if(re.search('print(.*)',entry)):
             warnings.warn("print function found on a non-terminal line. Attempting to comment it out.")
