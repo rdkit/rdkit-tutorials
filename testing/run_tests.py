@@ -87,8 +87,8 @@ def process_cell(cell):
     for entry in keep_txt:
         if entry.find('#') != -1:
             entry = entry.split('#')[0]
-            if len(entry):
-                kt2.append(entry)
+        if len(entry):
+            kt2.append(entry)
     keep_txt = kt2
     if not keep_txt:
         return None,None
@@ -152,7 +152,7 @@ def rundoctests(text, name='<text>', globs=None, verbose=None,
         globs.update(extraglobs)
     if '__name__' not in globs:
         globs['__name__'] = '__main__'
-    #print(text)
+    # print(text)
     # Parse the text to find doc tests.
     parser = doctest.DocTestParser()
     test = parser.get_doctest(text, globs, name, name, 0)
@@ -191,6 +191,7 @@ if __name__ =='__main__':
         nb = _notebook_read(fn)
         txt = process_notebook(nb)
         tpl = run_tests(txt)
+        print("    ",tpl)
         nFailed += tpl.failed
         nTried += tpl.attempted
     if nFailed:
