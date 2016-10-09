@@ -20,6 +20,7 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 #
+from __future__ import print_function
 import os,warnings
 import nbformat
 
@@ -191,7 +192,6 @@ if __name__ =='__main__':
         nb = _notebook_read(fn)
         txt = process_notebook(nb)
         tpl = run_tests(txt)
-        print("    ",tpl)
         nFailed += tpl.failed
         nTried += tpl.attempted
     if nFailed:
