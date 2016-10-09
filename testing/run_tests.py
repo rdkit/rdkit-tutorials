@@ -74,7 +74,6 @@ def process_cell(cell):
         if txt.find('"""') != -1:
             raise ValueError("cannot deal with mixed multi-line notations in a single cell")
         keep_txt = _handle_multilinetext(txt,"'''")
-
     else:
         keep_txt = [x for x in txt.split('\n') ]
     for i,entry in enumerate(keep_txt[:-1]):
@@ -83,6 +82,17 @@ def process_cell(cell):
             keep_txt[i] = re.sub(r'print\((.*)\)',r'# print(\1)',entry)
     #cell_code = ['>>> '+x for x in keep_txt]
     #cell_code = [x for x in txt.split('\n')]
+    # strip out comments
+    kt2 = []
+    for entry in keep_txt:
+        if entry.find('#') != -1:
+            entry = entry.split('#')[0]
+            if len(entry):
+                kt2.append(entry)
+    keep_txt = kt2
+    if not keep_txt:
+        return None,None
+
     cell_code = ">>> "+";".join(keep_txt)
 
     outputs = [x for x in cell['outputs'] if x['output_type'] in ('execute_result','stream')]
