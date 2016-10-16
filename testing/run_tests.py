@@ -43,7 +43,6 @@ def _handle_multilinetext(txt,quotes):
         keep_txt.extend(piece.split("\n"))
         if i+1<len(stxt): # still a text block here
             keep_txt[-1] = keep_txt[-1]+quotes+"\n... ".join(stxt[i+1].split("\n"))+quotes
-    print("KEEP:",keep_txt,file=sys.stderr)
     return keep_txt
 
 
