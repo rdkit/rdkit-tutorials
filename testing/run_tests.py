@@ -21,7 +21,7 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #
 from __future__ import print_function
-import os,warnings
+import os,warnings,sys
 import nbformat
 
 def _notebook_read(path):
@@ -47,10 +47,11 @@ def _handle_multilinetext(txt,quotes):
 
 
 import re
-ptr_expr = re.compile(r'^<(.*) at 0x.*>')
+ptr_expr = re.compile(r'<(.*) at 0x.*>')
+ignore_expr = re.compile(r'#\W*doctest:\W*IGNORE')
 def process_cell(cell):
     txt = cell['source']
-    if '# doctest: IGNORE' in txt:
+    if ignore_expr.search(txt):
         return None,None
     if not txt:
         return None,None
@@ -61,10 +62,6 @@ def process_cell(cell):
         warnings.warn("ipython magic command found in cell. Skipping the cell.")
         return None,None
 
-    # if(re.search('print(.*)',txt)):
-    #     warnings.warn("print functions found in a cell. Attempted to comment them out.")
-    #     print(cell)
-    # txt = re.sub(r'print\((.*)\)',r'# print(\1)',txt)
     # NOTE: this is extremely crude
     txt = txt.replace("\\\n","\n")
     if txt.find('"""')>=0 :
@@ -81,21 +78,31 @@ def process_cell(cell):
         if(re.search('print(.*)',entry)):
             warnings.warn("print function found on a non-terminal line. Attempting to comment it out.")
             keep_txt[i] = re.sub(r'print\((.*)\)',r'# print(\1)',entry)
-    #cell_code = ['>>> '+x for x in keep_txt]
-    #cell_code = [x for x in txt.split('\n')]
-    # strip out comments
     kt2 = []
     for entry in keep_txt:
-        if entry.find('#') != -1:
-            entry = entry.split('#')[0]
+        if entry.startswith('#'):
+            entry = []
+        else:
+            entry = re.split(r'\s#',entry)[0]
         if len(entry):
-            kt2.append(entry)
+            if len(kt2) and entry[0] in ' \t':
+                kt2[-1] = kt2[-1]+'\n... '+entry
+                if kt2[-1].find('>>> ') in (0,1):
+                    pass
+                else:
+                    if len(kt2)>1:
+                        kt2[-1] = "\n>>> "+kt2[-1]
+                    else:
+                        kt2[-1] = ">>> "+kt2[-1]
+            else:
+                kt2.append(entry)
     keep_txt = kt2
     if not keep_txt:
         return None,None
-
-    cell_code = ">>> "+";".join(keep_txt)
-
+    ktj = ";".join(keep_txt)
+    if ktj[:4] != '>>> ':
+        ktj = ">>> "+ktj
+    cell_code = ktj
     outputs = [x for x in cell['outputs'] if x['output_type'] in ('execute_result','stream')]
     if len(outputs)>1:
         warnings.warn("more than one output found. Ignoring all but the last")
@@ -114,11 +121,10 @@ def process_cell(cell):
                 txt = txt.replace('\n\n','\n<BLANKLINE>\n')
         else:
             raise NotImplementedError(output['output_type'])
-        if ptr_expr.match(txt):
+        if ptr_expr.search(txt):
             txt = ptr_expr.sub(r'<\1... at 0x...>',txt)
             cell_code += ' # doctest: +ELLIPSIS'
         cell_output.append(txt)
-
     return [cell_code],cell_output
 
 def process_notebook(nb):
