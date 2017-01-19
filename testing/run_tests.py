@@ -80,8 +80,10 @@ def process_cell(cell):
             keep_txt[i] = re.sub(r'print\((.*)\)',r'# print(\1)',entry)
     kt2 = []
     for entry in keep_txt:
-        if entry.find('#') != -1:
-            entry = entry.split('#')[0]
+        if entry.startswith('#'):
+            entry = []
+        else:
+            entry = re.split(r'\s#',entry)[0]
         if len(entry):
             if len(kt2) and entry[0] in ' \t':
                 kt2[-1] = kt2[-1]+'\n... '+entry
