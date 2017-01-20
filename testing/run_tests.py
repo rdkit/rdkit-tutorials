@@ -47,7 +47,8 @@ def _handle_multilinetext(txt,quotes):
 
 
 import re
-ptr_expr = re.compile(r'<(.*) at 0x.*>')
+
+ptr_expr = re.compile(r'^<(.*) at 0x.*>')
 ignore_expr = re.compile(r'#\W*doctest:\W*IGNORE')
 def process_cell(cell):
     txt = cell['source']
