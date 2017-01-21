@@ -47,7 +47,8 @@ def _handle_multilinetext(txt,quotes):
 
 
 import re
-ptr_expr = re.compile(r'^<(.*) at 0x.*>')
+
+ptr_expr = re.compile(r'<(.*) at 0x.*>')
 ignore_expr = re.compile(r'#\W*doctest:\W*IGNORE')
 def process_cell(cell):
     txt = cell['source']
@@ -80,8 +81,10 @@ def process_cell(cell):
             keep_txt[i] = re.sub(r'print\((.*)\)',r'# print(\1)',entry)
     kt2 = []
     for entry in keep_txt:
-        if entry.find('#') != -1:
-            entry = entry.split('#')[0]
+        if entry.startswith('#'):
+            entry = []
+        else:
+            entry = re.split(r'\s#',entry)[0]
         if len(entry):
             if len(kt2) and entry[0] in ' \t':
                 kt2[-1] = kt2[-1]+'\n... '+entry
@@ -119,7 +122,7 @@ def process_cell(cell):
                 txt = txt.replace('\n\n','\n<BLANKLINE>\n')
         else:
             raise NotImplementedError(output['output_type'])
-        if ptr_expr.match(txt):
+        if ptr_expr.search(txt):
             txt = ptr_expr.sub(r'<\1... at 0x...>',txt)
             cell_code += ' # doctest: +ELLIPSIS'
         cell_output.append(txt)
