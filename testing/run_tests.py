@@ -50,6 +50,7 @@ import re
 
 ptr_expr = re.compile(r'<(.*) at 0x.*>')
 ignore_expr = re.compile(r'#\W*doctest:\W*IGNORE')
+img_expr = re.compile(r'<img src=.*>')
 def process_cell(cell):
     txt = cell['source']
     if ignore_expr.search(txt):
@@ -110,6 +111,7 @@ def process_cell(cell):
         outputs = outputs[-1:]
 
     cell_output=[]
+    haveEllipsis=False
     for output in outputs:
         if output['output_type']=='execute_result':
             d = output['data']
@@ -124,8 +126,12 @@ def process_cell(cell):
             raise NotImplementedError(output['output_type'])
         if ptr_expr.search(txt):
             txt = ptr_expr.sub(r'<\1... at 0x...>',txt)
-            cell_code += ' # doctest: +ELLIPSIS'
+            haveEllipsis = True
+        if img_expr.search(txt):
+            txt = img_expr.sub(r'<img src=...>',txt)
+            haveEllipsis = True
         cell_output.append(txt)
+    if haveEllipsis: cell_code += ' # doctest: +ELLIPSIS'
     return [cell_code],cell_output
 
 def process_notebook(nb):

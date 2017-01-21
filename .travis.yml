@@ -10,7 +10,7 @@ sudo: false
 
 before_install:
  # download and install miniconda
- - wget http://repo.continuum.io/miniconda/Miniconda-3.5.5-Linux-x86_64.sh -O miniconda.sh;
+ - wget http://repo.continuum.io/miniconda/Miniconda3-4.1.11-Linux-x86_64.sh -O miniconda.sh;
  - bash miniconda.sh -b -p $HOME/conda
  - export PATH="$HOME/conda/bin:$PATH"
  - hash -r
@@ -33,7 +33,7 @@ addons:
     - libjpeg-dev
 
 install:
- - conda install -q numpy pillow pandas jupyter nbconvert # matplotlib
+ - conda install -q scikit-learn numpy pillow pandas jupyter nbconvert # matplotlib
 
  # install the most recent rdkit package from the RDKit anaconda channel.
  - conda install -q -c rdkit rdkit
