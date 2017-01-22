@@ -33,7 +33,7 @@ addons:
     - libjpeg-dev
 
 install:
- - conda install -q scikit-learn numpy pillow pandas jupyter nbconvert # matplotlib
+ - conda install -q scikit-learn numpy pillow pandas jupyter nbconvert matplotlib
 
  # install the most recent rdkit package from the RDKit anaconda channel.
  - conda install -q -c rdkit rdkit
