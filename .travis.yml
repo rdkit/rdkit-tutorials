@@ -2,8 +2,7 @@
 language: python
 python:
  # We don't actually use the Travis Python, but this keeps it organized.
- - "2.7"
- - "3.5"
+ - "3.8"
 
 # switch to new infrastructure
 sudo: false
@@ -24,24 +23,24 @@ before_install:
  - source activate tenv
 
 # additional .debs we need:
-addons:
- apt:
-  packages:
-    - build-essential
-    - openjdk-7-jdk
-    - swig
-    - libjpeg-dev
+#addons:
+# apt:
+#  packages:
+#    - build-essential
+#    - openjdk-7-jdk
+#    - swig
+#    - libjpeg-dev
 
 install:
  - conda install -q scikit-learn numpy pillow pandas jupyter nbconvert matplotlib seaborn
 
  # install the most recent rdkit package from the RDKit anaconda channel.
- - conda install -q -c rdkit rdkit
+ - conda install -q -c conda-forge rdkit
 
-before_script:
- # RDKit
- - export RDBASE=$CONDA_PREFIX/Library/share/RDKit
- - echo $RDBASE
+# before_script:
+# # RDKit
+# - export RDBASE=$CONDA_PREFIX/Library/share/RDKit
+# - echo $RDBASE
 
 script:
  - export BASEDIR=`pwd`
